@@ -28,7 +28,7 @@ impl Into<ArcMaterial> for Checkerboard {
 impl Material for Checkerboard {
     fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<MaterialRecord> {
         let Vec3(x, _, z) = hit_record.hit_location;
-        if (x.abs().floor() % 2.0 == 0.0) ^ (z.floor().abs() % 2.0 == 0.0) {
+        if ((x.abs() + 0.5).floor() % 2.0 == 0.0) ^ ((z.abs() + 0.5).floor() % 2.0 == 0.0) {
             self.mat1.scatter(ray, hit_record)
         } else {
             self.mat2.scatter(ray, hit_record)
