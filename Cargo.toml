@@ -12,3 +12,7 @@ num = "0.4.1"
 num-traits = "0.2.16"
 rand = "0.8.5"
 threadpool = "1.8.1"
+
+[profile.release]
+codegen-units = 1
+lto = true
