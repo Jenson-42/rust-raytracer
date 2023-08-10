@@ -1,10 +1,11 @@
 use std::sync::Arc;
 
 use crate::{
-    hittable::{ArcHittable, HitRecord, Hittable},
+    hittable::{bounding_box::BoundingBox, ArcHittable, HitRecord, Hittable, Interval},
     material::ArcMaterial,
     point3::Point3,
     ray::Ray,
+    Vec3,
 };
 
 /// So smooth and round!
@@ -31,7 +32,7 @@ impl Into<ArcHittable> for Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = ray.direction.length_squared();
         let half_b = oc.dot(&ray.direction);
@@ -44,9 +45,9 @@ impl Hittable for Sphere {
         let sqrtd = discriminant.sqrt();
 
         let mut root = (-half_b - sqrtd) / a;
-        if root < t_min || t_max < root {
+        if root < ray_t.min || ray_t.max < root {
             root = (-half_b + sqrtd) / a;
-            if root < t_min || t_max < root {
+            if root < ray_t.min || ray_t.max < root {
                 return None;
             }
         }
@@ -62,5 +63,10 @@ impl Hittable for Sphere {
             outward_normal,
             Arc::clone(&self.material),
         ))
+    }
+
+    fn bounding_box(&self) -> BoundingBox {
+        let r_vec = Vec3::new(self.radius, self.radius, self.radius);
+        BoundingBox::new(self.center - r_vec, self.center + r_vec)
     }
 }

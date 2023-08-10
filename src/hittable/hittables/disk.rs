@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    hittable::{ArcHittable, HitRecord, Hittable},
+    hittable::{bounding_box::BoundingBox, ArcHittable, HitRecord, Hittable, Interval},
     material::ArcMaterial,
     ray::Ray,
     Point3, Vec3,
@@ -33,7 +33,7 @@ impl Into<ArcHittable> for Disk {
 }
 
 impl Hittable for Disk {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let denom = self.normal.dot(&ray.direction);
         if denom.abs() < 1e-6 {
             return None;
@@ -41,7 +41,7 @@ impl Hittable for Disk {
 
         let t = -(ray.origin.dot(&self.normal)) / denom;
 
-        if t < t_min || t_max < t {
+        if t < ray_t.min || ray_t.max < t {
             return None;
         }
 
@@ -57,5 +57,10 @@ impl Hittable for Disk {
             self.normal,
             Arc::clone(&self.material),
         ))
+    }
+
+    fn bounding_box(&self) -> BoundingBox {
+        let r_vec = Vec3::new(self.radius, self.radius, self.radius);
+        BoundingBox::new(self.center - r_vec, self.center + r_vec)
     }
 }

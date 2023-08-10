@@ -31,6 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         samples: SAMPLES,
         max_bounces: MAX_BOUNCES,
         show_progress_bar: true,
+        use_bvh: true,
     };
 
     // Generate a camera at a cool angle.

@@ -51,6 +51,7 @@ mod tests {
             samples: 32,
             max_bounces: 8,
             show_progress_bar: false,
+            use_bvh: true,
         }
     }
 
@@ -64,6 +65,25 @@ mod tests {
             0.1,
             10.0,
         )
+    }
+
+    #[bench]
+    #[ignore]
+    fn bench_random_world_no_bvh(b: &mut Bencher) {
+        const ASPECT_RATIO: f64 = 3.0 / 2.0;
+
+        let mut render_options = create_test_render_options(ASPECT_RATIO);
+        render_options.use_bvh = false;
+
+        let camera = create_test_camera(ASPECT_RATIO);
+        let world = random_world();
+
+        b.iter(move || {
+            test::black_box(
+                render::<TestImageEncoder>(render_options.clone(), camera.clone(), world.clone())
+                    .unwrap(),
+            );
+        })
     }
 
     #[bench]

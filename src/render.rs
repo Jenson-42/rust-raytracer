@@ -1,4 +1,5 @@
 use std::error::Error;
+use std::sync::Arc;
 use std::thread;
 
 use indicatif::{ProgressBar, ProgressStyle};
@@ -6,7 +7,7 @@ use rand::Rng;
 
 use crate::camera::Camera;
 use crate::colour::Colour;
-use crate::hittable::{ArcHittable, Hittable};
+use crate::hittable::{ArcHittable, BvhNode, Interval};
 
 use crate::image_encoder::ImageEncoder;
 use crate::ray::Ray;
@@ -18,17 +19,18 @@ pub struct RenderOptions {
     pub samples: u32,
     pub max_bounces: u32,
     pub show_progress_bar: bool,
+    pub use_bvh: bool,
 }
 
 /// Get the colour of a ray sent out into the world.
-fn ray_colour(ray: &Ray, world: &Vec<ArcHittable>, max_depth: u32) -> Colour {
+fn ray_colour(ray: &Ray, world: &ArcHittable, max_depth: u32) -> Colour {
     // Return black if we've reached the maximum number of bounces.
     if max_depth <= 0 {
         return Colour::new(0.0, 0.0, 0.0);
     }
 
     // Check if the ray hits anything in the scene.
-    if let Some(hit_record) = world.hit(ray, 0.001, f64::INFINITY) {
+    if let Some(hit_record) = world.hit(ray, &Interval::new(0.001, f64::INFINITY)) {
         // If it does, check if the material scatters the ray or absorbs it.
         if let Some(mat_record) = hit_record.material.scatter(ray, &hit_record) {
             // Mix the color of the original ray with the color of the scattered ray.
@@ -50,7 +52,7 @@ fn ray_colour(ray: &Ray, world: &Vec<ArcHittable>, max_depth: u32) -> Colour {
 pub fn render<O: ImageEncoder>(
     options: RenderOptions,
     camera: Camera,
-    world: Vec<ArcHittable>,
+    world: impl Into<Vec<ArcHittable>>,
 ) -> Result<O, Box<dyn Error>> {
     let RenderOptions {
         image_width,
@@ -58,16 +60,25 @@ pub fn render<O: ImageEncoder>(
         samples,
         max_bounces,
         show_progress_bar,
+        use_bvh,
     } = options;
 
     let mut image_buffer = O::new(image_width, image_height);
 
+    let world: ArcHittable = if use_bvh {
+        BvhNode::create(world.into()).into()
+    } else {
+        Arc::new(world.into())
+    };
+
     let bar = if show_progress_bar {
-        let b = ProgressBar::new(image_height as u64 * 10);
+        let b = ProgressBar::new(image_height as u64 * 10)
+            .with_finish(indicatif::ProgressFinish::Abandon);
         b.set_style(
             ProgressStyle::with_template("{elapsed} {wide_bar} {percent}% eta: {eta}")
                 .expect("Progress bar style should be valid."),
         );
+
         Some(b)
     } else {
         None
@@ -84,10 +95,10 @@ pub fn render<O: ImageEncoder>(
 
         let handle = thread::spawn(move || {
             let mut row = Vec::with_capacity(image_width as usize);
+            let mut rng = rand::thread_rng();
 
             for i in 0..image_width {
                 let mut colour = Colour::new(0.0, 0.0, 0.0);
-                let mut rng = rand::thread_rng();
 
                 for _ in 0..samples {
                     let u = (f64::from(i) + rng.gen_range(0.0..1.0)) / f64::from(image_width - 1);

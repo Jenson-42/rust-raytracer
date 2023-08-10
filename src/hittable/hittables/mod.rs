@@ -1,7 +1,7 @@
 mod disk;
-mod plane;
+mod not_hittable;
 mod sphere;
 
 pub use disk::Disk;
-pub use plane::Plane;
+pub use not_hittable::NotHittable;
 pub use sphere::Sphere;
