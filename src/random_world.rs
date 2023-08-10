@@ -22,8 +22,9 @@ pub fn random_world() -> Vec<ArcHittable> {
     // They're only in a Vec because I'm too lazy to specify the type for each one.
     let materials: Vec<ArcMaterial> = vec![
         Checkerboard::new(
-            Lambertian::new(Colour::new(0.5, 0.5, 0.5)).into(),
-            Lambertian::new(Colour::new(0.9, 0.9, 0.9)).into(),
+            0.5,
+            Lambertian::new(Colour::new(0.7, 0.7, 0.7)).into(),
+            Metal::new(Colour::new(0.1, 0.1, 0.1), 0.5).into(),
         )
         .into(),
         Lambertian::new(Colour::new(0.4, 0.2, 0.1)).into(),

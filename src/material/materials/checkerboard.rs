@@ -11,11 +11,12 @@ use crate::{
 pub struct Checkerboard {
     pub mat1: ArcMaterial,
     pub mat2: ArcMaterial,
+    pub scale: f64,
 }
 
 impl Checkerboard {
-    pub fn new(mat1: ArcMaterial, mat2: ArcMaterial) -> Self {
-        Self { mat1, mat2 }
+    pub fn new(scale: f64, mat1: ArcMaterial, mat2: ArcMaterial) -> Self {
+        Self { mat1, mat2, scale }
     }
 }
 
@@ -27,8 +28,9 @@ impl Into<ArcMaterial> for Checkerboard {
 
 impl Material for Checkerboard {
     fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Option<MaterialRecord> {
-        let Vec3(x, _, z) = hit_record.hit_location;
-        if ((x.abs() + 0.5).floor() % 2.0 == 0.0) ^ ((z.abs() + 0.5).floor() % 2.0 == 0.0) {
+        let Vec3(x, y, z) = hit_record.hit_location;
+        let compute = |n: f64| f64::floor(f64::abs(n + 0.5) / self.scale) % 2.0 == 0.0;
+        if compute(x) ^ compute(y) ^ compute(z) {
             self.mat1.scatter(ray, hit_record)
         } else {
             self.mat2.scatter(ray, hit_record)
