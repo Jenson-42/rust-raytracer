@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use image::{ImageBuffer, Pixel, Rgb};
 
 use super::ImageEncoder;
@@ -19,7 +21,10 @@ impl ImageEncoder for ImageCrateEncoder<Rgb<u8>> {
         *self.imgbuf.get_pixel_mut(x, y) = Rgb(colour.into());
     }
 
-    fn save_image(&self, filename: &str) -> Result<(), ()> {
+    fn save_image<P>(&self, filename: P) -> Result<(), ()>
+    where
+        P: AsRef<Path>,
+    {
         match self.imgbuf.save(filename) {
             Ok(_) => Ok(()),
             Err(_) => Err(()),

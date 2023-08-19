@@ -21,6 +21,8 @@ pub use vec3::Vec3;
 #[cfg(test)]
 mod tests {
     extern crate test;
+    use std::path::Path;
+
     use test::Bencher;
 
     use crate::{
@@ -34,7 +36,10 @@ mod tests {
             Self
         }
 
-        fn save_image(&self, _: &str) -> Result<(), ()> {
+        fn save_image<P>(&self, _: P) -> Result<(), ()>
+        where
+            P: AsRef<Path>,
+        {
             Ok(())
         }
 

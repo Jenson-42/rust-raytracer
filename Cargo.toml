@@ -1,9 +1,7 @@
 [package]
-name = "raytracing-in-a-weekend"
+name = "magnetite"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 image = "0.24.6"
@@ -13,6 +11,9 @@ num = "0.4.1"
 num-traits = "0.2.16"
 rand = "0.8.5"
 threadpool = "1.8.1"
+
+[dev-dependencies]
+clap = { version = "4.3.21", features = ["derive"] }
 
 [profile.release]
 codegen-units = 1
